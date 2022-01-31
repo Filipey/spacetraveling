@@ -29,10 +29,11 @@ interface PostPagination {
 }
 
 interface HomeProps {
-  postsPagination: PostPagination;
+  postsPagination: PostPagination,
+  preview: boolean;
 }
 
-export default function Home({ postsPagination }: HomeProps) {
+export default function Home({ postsPagination, preview }: HomeProps) {
   const formatedPost = postsPagination.results.map(post => {
     return {
       ...post,
@@ -61,7 +62,7 @@ export default function Home({ postsPagination }: HomeProps) {
     setNextPage(postsResults.next_page);
     setCurrentPage(postsResults.page)
 
-    const newPosts = postsResults.results.map(post => {
+    const newPosts = postsResults.results.map((post: Post) => {
       return {
         uid: post.uid,
         first_publication_date: format(
@@ -117,13 +118,20 @@ export default function Home({ postsPagination }: HomeProps) {
           )}
         </div>
 
+        {preview && (
+          <aside>
+            <Link href="/api/exit-preview">
+            <a className={commonStyles.preview}>Sair do modo Preview</a>
+            </Link>
+          </aside>
+        )}
 
       </main>
     </>
   )
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({ preview = false }) => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query<any>([
     Prismic.Predicates.at('document.type', 'posts'),
@@ -154,6 +162,7 @@ export const getStaticProps: GetStaticProps = async () => {
   return {
     props: {
       postsPagination,
+      preview,
     }
   }
 
